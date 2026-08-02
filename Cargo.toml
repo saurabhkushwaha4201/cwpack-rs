@@ -1,0 +1,78 @@
+[package]
+name = "cwpack-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rmp = "0.8.15"
+
+[build-dependencies]
+cc = "1.0"
+
+[[test]]
+name = "timestamp_32_boundary"
+path = "tests/differential/timestamp_32_boundary.rs"
+
+[[test]]
+name = "int_boundary_all"
+path = "tests/differential/int_boundary_all.rs"
+
+[[test]]
+name = "skip_items_fallthrough_chain"
+path = "tests/differential/skip_items_fallthrough_chain.rs"
+
+[[test]]
+name = "skip_items_nested_containers"
+path = "tests/differential/skip_items_nested_containers.rs"
+
+[[test]]
+name = "timestamp_64_boundary"
+path = "tests/differential/timestamp_64_boundary.rs"
+
+[[test]]
+name = "timestamp_96_boundary"
+path = "tests/differential/timestamp_96_boundary.rs"
+
+[[test]]
+name = "timestamp_invalid_nsec"
+path = "tests/differential/timestamp_invalid_nsec.rs"
+
+[[test]]
+name = "sticky_error_sequence"
+path = "tests/differential/sticky_error_sequence.rs"
+
+[[test]]
+name = "compat_mode_bin_to_str"
+path = "tests/differential/compat_mode_bin_to_str.rs"
+
+[[test]]
+name = "timestamp_fixext_wrong_len"
+path = "tests/differential/timestamp_fixext_wrong_len.rs"
+
+[[test]]
+name = "compat_mode_ext_illegal"
+path = "tests/differential/compat_mode_ext_illegal.rs"
+
+[[test]]
+name = "compat_mode_str8_skip"
+path = "tests/differential/compat_mode_str8_skip.rs"
+
+[[test]]
+name = "look_ahead_after_error"
+path = "tests/differential/look_ahead_after_error.rs"
+
+[[test]]
+name = "skip_items_after_error"
+path = "tests/differential/skip_items_after_error.rs"
+
+[[test]]
+name = "cw_pack_insert_bypasses"
+path = "tests/differential/cw_pack_insert_bypasses.rs"
+
+[dev-dependencies]
+rmp = "0.8.15"
+
+[[bench]]
+name = "throughput"
+harness = false
+
