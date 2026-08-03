@@ -2,6 +2,7 @@
 name = "cwpack-rs"
 version = "0.1.0"
 edition = "2021"
+links = "cwpack"
 [dependencies]
 rmp = "0.8.15"
 [build-dependencies]
