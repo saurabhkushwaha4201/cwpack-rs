@@ -53,3 +53,4 @@ name = "cw_pack_insert_bypasses"
 path = "tests/differential/cw_pack_insert_bypasses.rs"
 [dev-dependencies]
 rmp = "0.8.15"
+criterion = "0.5"

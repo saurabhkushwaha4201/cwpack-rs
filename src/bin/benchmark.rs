@@ -85,7 +85,7 @@ fn bench_unpack_rmp(iters: u32) -> std::time::Duration {
         let _ = rmp::decode::read_map_len(&mut cur);
         let l = rmp::decode::read_str_len(&mut cur).unwrap() as u64; cur.set_position(cur.position() + l);
         let ret = rmp::decode::read_bool(&mut cur);
-        black_box(ret);
+        let _ = black_box(ret);
     }
     start.elapsed()
 }

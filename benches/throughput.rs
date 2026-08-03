@@ -56,7 +56,7 @@ fn bench_unpack_cwpack_rs(c: &mut Criterion) {
     pack_ctx.pack_map_size(1);
     pack_ctx.pack_str(b"key");
     pack_ctx.pack_boolean(true);
-    let bytes = pack_ctx.buffer_slice();
+    let bytes = unsafe { pack_ctx.written_bytes() };
 
     c.bench_function("unpack_cwpack_rs", |b| b.iter(|| {
         let mut ctx = UnpackContext::new(bytes);
@@ -79,7 +79,7 @@ fn bench_unpack_cwpack_c(c: &mut Criterion) {
     pack_ctx.pack_map_size(1);
     pack_ctx.pack_str(b"key");
     pack_ctx.pack_boolean(true);
-    let bytes = pack_ctx.buffer_slice();
+    let bytes = unsafe { pack_ctx.written_bytes() };
 
     c.bench_function("unpack_cwpack_c", |b| b.iter(|| {
         unsafe {

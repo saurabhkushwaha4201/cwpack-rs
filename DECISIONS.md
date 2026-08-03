@@ -20,7 +20,7 @@ The `cwpack.h` header includes `<stdbool.h>` (C99 standard), which dictates that
 
 ---
 
-## Phase 3–5 Decisions (Port Implementation)
+## (Port Implementation)
 
 ### DEV-001: Deviation — timestamp32 unpack sign-extension bug (BUG-001) — fixed, not replicated
 The original C `getDDItemFix` macro casts `tmpu32` through `(long)` before storing to `int64_t tv_sec` (line 349 of `cwpack_defines.h`). On LLP64 (Windows), `long` is 32-bit signed, so values `sec >= 2^31` silently become negative. Rust has no platform-varying integer type; the port uses `tmpu32 as i64` (zero-extension, always correct). **Differential test `timestamp_32_boundary.rs` will intentionally diverge from the Windows-compiled C oracle for `sec ∈ [2^31, 2^32)`. This mismatch documents the detected bug, not a port defect.**
