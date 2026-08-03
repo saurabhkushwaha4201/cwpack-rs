@@ -87,14 +87,3 @@ This file tracks every significant divergence, correction, and addition made dur
 
 ---
 
-## Time-Box Checkpoints
-
-| Checkpoint | Target | Status |
-|-----------|--------|--------|
-| REQUIREMENTS.md verified and closed | Hour 14 | ✅ Phase 3 complete |
-| ffi.rs complete (all 19 functions) | Hour 16 | ✅ |
-| src/types.rs, pack.rs written | Hour 20 | In progress |
-| Tier 1 functions ported + tested | Hour 40 | Pending |
-| Tier 2 functions ported + tested | Hour 52 | Pending |
-| All differential tests passing | Hour 60 | Pending |
-| README, benchmarks, demo prep | Hour 68 | Pending |
