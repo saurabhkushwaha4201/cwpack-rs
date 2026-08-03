@@ -2,7 +2,6 @@
 
 ![Build Status](https://github.com/saurabhkushwaha4201/cwpack-rs/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Safe Rust](https://img.shields.io/badge/rust-100%25%20safe-brightgreen.svg)
 
 A safe, **zero-allocation** Rust port of [CWPack](https://github.com/Claes/cwpack), a blazing fast and lightweight MessagePack C library.
 
@@ -25,8 +24,8 @@ A safe, **zero-allocation** Rust port of [CWPack](https://github.com/Claes/cwpac
 
 ## ✨ Features
 
-- **Zero Allocation**: Operates entirely on borrowed `&[u8]` and `&mut [u8]` buffers. No `Vec` or `String` allocations inside the core packer/unpacker.
-- **100% Safe Rust**: Trades raw C pointers for safe Rust slices and index tracking without compromising speed.
+- **Zero Allocation**: Operates entirely on borrowed `&[u8]` and `&mut [u8]` buffers via its public API. No `Vec` or `String` allocations inside the core packer/unpacker.
+- **Memory Safety**: Structurally prevents C's integer overflows (like BUG-003) by relying on Rust's strict slice length guarantees at the API boundary.
 - **Context-Driven**: Stateful packing and unpacking with "sticky" error contexts, meaning you can chain operations and check for errors once at the end.
 - **C-Oracle Verified**: Tested directly against the original C implementation via differential FFI fuzzing.
 
