@@ -15,10 +15,10 @@ fn bench_pack_cwpack_rs(iters: u32) -> std::time::Duration {
         ctx.pack_map_size(1);
         ctx.pack_str(black_box(b"key"));
         ctx.pack_boolean(black_box(true));
+        
+        let n = unsafe { ctx.current.offset_from(ctx.start) } as usize;
+        black_box(buf[n - 1]);
     }
-
-    let n = unsafe { ctx.current.offset_from(ctx.start) } as usize;
-    black_box(buf[n - 1]);
     start.elapsed()
 }
 
@@ -33,10 +33,8 @@ fn bench_pack_rmp(iters: u32) -> std::time::Duration {
         rmp::encode::write_map_len(&mut buf, 1).unwrap();
         rmp::encode::write_str(&mut buf, black_box("key")).unwrap();
         rmp::encode::write_bool(&mut buf, black_box(true)).unwrap();
+        black_box(buf[buf.len() - 1]);
     }
-
-    let n = unsafe { ctx.current.offset_from(ctx.start) } as usize;
-    black_box(buf[n - 1]);
     start.elapsed()
 }
 
@@ -63,9 +61,6 @@ fn bench_unpack_cwpack_rs(iters: u32) -> std::time::Duration {
         ctx.unpack_next();
         black_box(ctx.return_code);
     }
-
-    let n = unsafe { ctx.current.offset_from(ctx.start) } as usize;
-    black_box(buf[n - 1]);
     start.elapsed()
 }
 
@@ -82,7 +77,6 @@ fn bench_unpack_rmp(iters: u32) -> std::time::Duration {
     let bytes = &buf[..n];
 
     let start = Instant::now();
-    let mut str_buf = vec![0u8; 32];
     for _ in 0..iters {
         let mut cur = Cursor::new(bytes);
         let _ = rmp::decode::read_array_len(&mut cur);
@@ -90,29 +84,25 @@ fn bench_unpack_rmp(iters: u32) -> std::time::Duration {
         let l = rmp::decode::read_str_len(&mut cur).unwrap() as u64; cur.set_position(cur.position() + l);
         let _ = rmp::decode::read_map_len(&mut cur);
         let l = rmp::decode::read_str_len(&mut cur).unwrap() as u64; cur.set_position(cur.position() + l);
-        let _ = rmp::decode::read_bool(&mut cur);
+        let ret = rmp::decode::read_bool(&mut cur);
+        black_box(ret);
     }
-
-    let n = unsafe { ctx.current.offset_from(ctx.start) } as usize;
-    black_box(buf[n - 1]);
     start.elapsed()
 }
 
 fn main() {
     let iters = 10_000_000;
-    println!("Running {} iterations for each benchmark...", iters);
-
-    let d_pack_rs = bench_pack_cwpack_rs(iters);
-    let d_pack_rmp = bench_pack_rmp(iters);
-
-    let d_unpack_rs = bench_unpack_cwpack_rs(iters);
-    let d_unpack_rmp = bench_unpack_rmp(iters);
-
-    println!("\nPACKING:");
-    println!("cwpack-rs : {:?}", d_pack_rs);
-    println!("msgpack-rust: {:?}", d_pack_rmp);
-
-    println!("\nUNPACKING:");
-    println!("cwpack-rs : {:?}", d_unpack_rs);
-    println!("msgpack-rust: {:?}", d_unpack_rmp);
+    println!("Running {} iterations...", iters);
+    
+    let d = bench_pack_cwpack_rs(iters);
+    println!("Pack cwpack-rs: {} ms", d.as_millis());
+    
+    let d = bench_pack_rmp(iters);
+    println!("Pack rmp: {} ms", d.as_millis());
+    
+    let d = bench_unpack_cwpack_rs(iters);
+    println!("Unpack cwpack-rs: {} ms", d.as_millis());
+    
+    let d = bench_unpack_rmp(iters);
+    println!("Unpack rmp: {} ms", d.as_millis());
 }

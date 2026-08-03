@@ -1,6 +1,6 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use cwpack_rs::ffi::{CwPackContext, CwUnpackContext, CWP_RC_OK, cw_unpack_context_init, cw_unpack_next};
+use cwpack_rs::ffi::{CwUnpackContext, CWP_RC_OK, cw_unpack_context_init, cw_unpack_next};
 use cwpack_rs::unpack::UnpackContext;
 use std::ffi::c_void;
 use std::mem::MaybeUninit;
@@ -49,27 +49,27 @@ fuzz_target!(|data: &[u8]| {
     // BUG-001: timestamp32 sign-extension bug on LLP64
     let mut hit_bug001 = false;
     for (rs_item, c_item) in rs_items.iter().zip(c_items.iter()) {
-        if rs_item.type_ == cwpack_rs::types::ITEM_TIMESTAMP && c_item.type == cwpack_rs::ffi::CWP_ITEM_TIMESTAMP {
+        if rs_item.type_ == cwpack_rs::types::ITEM_TIMESTAMP && c_item.type_ == cwpack_rs::ffi::CWP_ITEM_TIMESTAMP {
             let rs_sec = unsafe { rs_item.as_.time.tv_sec };
-            let c_sec = unsafe { c_item.as.time.tv_sec };
+            let c_sec = unsafe { c_item.as_.time.tv_sec };
             if rs_sec != c_sec && c_sec < 0 && rs_sec >= 2147483648 {
                 hit_bug001 = true;
                 continue; // Ignore this specific divergence
             }
         }
         
-        assert_eq!(rs_item.type_, c_item.type, "Item type mismatch");
+        assert_eq!(rs_item.type_, c_item.type_, "Item type mismatch");
         // Compare raw memory of the union `as_`
         let rs_bytes = unsafe { std::slice::from_raw_parts(&rs_item.as_ as *const _ as *const u8, std::mem::size_of_val(&rs_item.as_)) };
-        let c_bytes = unsafe { std::slice::from_raw_parts(&c_item.as as *const _ as *const u8, std::mem::size_of_val(&c_item.as)) };
+        let c_bytes = unsafe { std::slice::from_raw_parts(&c_item.as_ as *const _ as *const u8, std::mem::size_of_val(&c_item.as_)) };
         // For strings/blobs we need to compare length and contents
         if rs_item.type_ == cwpack_rs::types::ITEM_STR || rs_item.type_ == cwpack_rs::types::ITEM_BIN || rs_item.type_ >= cwpack_rs::types::ITEM_EXT {
              let rs_blob = unsafe { rs_item.as_.ext };
-             let c_blob = unsafe { c_item.as.ext };
+             let c_blob = unsafe { c_item.as_.ext };
              assert_eq!(rs_blob.length, c_blob.length);
              if rs_blob.length > 0 {
-                 let rs_slice = unsafe { std::slice::from_raw_parts(rs_blob.start, rs_blob.length as usize) };
-                 let c_slice = unsafe { std::slice::from_raw_parts(c_blob.start, c_blob.length as usize) };
+                 let rs_slice = unsafe { std::slice::from_raw_parts(rs_blob.start as *const u8, rs_blob.length as usize) };
+                 let c_slice = unsafe { std::slice::from_raw_parts(c_blob.start as *const u8, c_blob.length as usize) };
                  assert_eq!(rs_slice, c_slice);
              }
         } else {
