@@ -34,6 +34,32 @@ unpack_context->item.as.time.tv_sec = (long)tmpu32;   // line 349
 
 ---
 
+## BUG-002: `cw_pack_insert` bypasses sticky-error guard
+
+**Found via:** Code review of `cwpack.c` line 429–434.
+
+**Location:** `original/src/cwpack.c`, `cw_pack_insert` function
+
+**Exact code:**
+```c
+void cw_pack_insert (cw_pack_context* pack_context, const void* v, uint32_t l)
+{
+    uint8_t *p;
+    cw_pack_reserve_space(l);     // ← no return_code check before this
+    memcpy(p,v,l);
+}
+```
+
+**Root cause:** Unlike every other pack function, `cw_pack_insert` does NOT check `return_code` before writing. It will write raw bytes into the buffer even when the context is in an error state. This can silently corrupt partially-written data after a prior error.
+
+**Correct behavior:** N/A — this is intentional design, not a defect.
+
+**Severity:** Low in normal usage (callers checking `return_code` after each call). Medium if used in a pipeline that assumes post-error calls are no-ops.
+
+**Status:** Intentional design (escape hatch for pre-encoded MsgPack blobs). The Rust port **replicates** this behaviour faithfully, with an explicit comment. Documented in DECISIONS.md. Verified by tests/differential/cw_pack_insert_bypasses.rs.
+
+---
+
 ## BUG-003: Integer overflow in `cw_pack_reserve_space` for large strings/blobs
 
 **Found via:** Code review of string/bin/ext packing macros and `cw_pack_reserve_space`.
@@ -58,26 +84,5 @@ The macro `cw_pack_reserve_space(4)` checks if there are 4 bytes available. If t
 **Severity:** High (Buffer Overflow). If an attacker can control the length parameter of a string/bin/ext payload (even with a dummy pointer if just fuzzing the packer), they can bypass bounds checking entirely.
 
 **Status:** Confirmed bug in original C. **NOT reproduced in Rust port**. In `cwpack-rs`, `data` is passed as a safe slice `&[u8]`. On 32-bit targets, Rust slices are strictly limited to `isize::MAX` (`0x7FFFFFFF`), so `l as usize + 5` maxes out at `0x80000004`, which fits perfectly within a 32-bit `usize` without wrapping. The overflow check will correctly trigger the handler.
-## BUG-002: `cw_pack_insert` bypasses sticky-error guard
-
-**Found via:** Code review of `cwpack.c` line 429–434.
-
-**Location:** `original/src/cwpack.c`, `cw_pack_insert` function
-
-**Exact code:**
-```c
-void cw_pack_insert (cw_pack_context* pack_context, const void* v, uint32_t l)
-{
-    uint8_t *p;
-    cw_pack_reserve_space(l);     // ← no return_code check before this
-    memcpy(p,v,l);
-}
-```
-
-**Behaviour:** Unlike every other pack function, `cw_pack_insert` does NOT check `return_code` before writing. It will write raw bytes into the buffer even when the context is in an error state. This can silently corrupt partially-written data after a prior error.
-
-**Severity:** Low in normal usage (callers checking `return_code` after each call). Medium if used in a pipeline that assumes post-error calls are no-ops.
-
-**Status:** Intentional design (escape hatch for pre-encoded MsgPack blobs). The Rust port **replicates** this behaviour faithfully, with an explicit comment. Documented in DECISIONS.md.
 
 ---
